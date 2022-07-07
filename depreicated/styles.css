@@ -1,0 +1,49 @@
+html,
+body {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  background-color: aqua;
+  font-family: "Times New Roman", Times, serif;
+  overflow: hidden;
+}
+
+.cols {
+  width: 100%;
+  height: 100%;
+  background-color: red;
+  display: grid;
+  grid-template-columns: 10fr 2fr;
+}
+
+.rows {
+  width: 100%;
+  height: 100%;
+  background-color: orange;
+  display: flex;
+  flex-direction: column;
+}
+
+.debug {
+  background-color: gray;
+}
+
+.controls {
+  background-color: green;
+}
+
+.canvas {
+  background-color: lightgreen;
+  width: 100%;
+  height: 100%;
+}
+#canvas {
+  width: 100%;
+  height: 100%;
+}
+#can {
+  width: 100%;
+  height: 100%;
+}
