@@ -33,3 +33,23 @@ export const getPxScale = (chartViewModel) => {
 };
 
 export const formatNumber = (num) => `${num > 9 ? "" : "0"}${num}`;
+
+export const positionXToTime = (x, chartViewModel, settings) => {
+  const currentMouseTime = new Date(chartViewModel.startingTime);
+  const minutes = x / chartViewModel.pxPerMinute;
+  currentMouseTime.setMinutes(
+    Math.ceil((currentMouseTime.getMinutes() + minutes) / 5) * 5
+  );
+  return currentMouseTime;
+};
+
+export const timeToPositionX = (date, chartViewModel) => {
+  const dateTime = date.getTime();
+  const startTime = chartViewModel.startingTime.getTime();
+  const endTime = chartViewModel.endingTime.getTime();
+  if (dateTime > startTime && endTime > startTime) {
+    const minsFromStart = (dateTime - startTime) / 60000;
+    return Math.floor(minsFromStart * chartViewModel.pxPerMinute);
+  }
+  return undefined;
+};

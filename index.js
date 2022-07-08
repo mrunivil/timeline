@@ -5,6 +5,7 @@ import {
   getPxScale,
   getStepsUnit,
   positionXToTime,
+  timeToPositionX,
 } from "./utils.js";
 
 const canvas = document.querySelector("#board");
@@ -142,7 +143,8 @@ const updateChartViewModel = (canvas, legendViewModel, chartModel) => {
 
 const drawLegend = (ctx, canvas, legendViewModel, settings) => {
   if (legendViewModel.show) {
-    ctx.strokeRect(0, 0, legendViewModel.width, legendViewModel.height);
+    ctx.lineWidth = 0.25;
+    // ctx.strokeRect(0, 0, legendViewModel.width, legendViewModel.height, 1);
     ctx.strokeRect(
       settings.legend.padding,
       settings.legend.padding,
@@ -155,13 +157,13 @@ const drawLegend = (ctx, canvas, legendViewModel, settings) => {
 const drawChart = (ctx, canvas, chartViewModel, settings) => {
   ctx.save();
   ctx.translate(chartViewModel.transformX, 0);
-  ctx.strokeRect(
-    -settings.chart.padding,
-    0,
-    chartViewModel.width,
-    chartViewModel.height
-  );
-  ctx.strokeRect(0, 0, chartViewModel.contentWidth, chartViewModel.height);
+  // ctx.strokeRect(
+  //   -settings.chart.padding,
+  //   0,
+  //   chartViewModel.width,
+  //   chartViewModel.height
+  // );
+  // ctx.strokeRect(0, 0, chartViewModel.contentWidth, chartViewModel.height);
   // ctx.lineWidth = 0.05;
   // const countLines = Math.floor(
   //   chartViewModel.contentWidth / chartViewModel.pxPerMinute
@@ -200,16 +202,16 @@ const drawBottom = (ctx, canvas, chartViewModel, settings) => {
   const minsPerUnit = factor * chartViewModel.pxPerMinute;
 
   const countLines = Math.floor(chartViewModel.width / minsPerUnit) + 1;
-
+  ctx.lineWidth = 0.25;
   ctx.fillStyle = "#333333";
   for (let i = 0; i < countLines; i++) {
     const tmp = new Date(chartViewModel.startingTime);
     tmp.setMinutes(tmp.getMinutes() + i * factor);
-    ctx.strokeRect(i * minsPerUnit, 8, 1, 8);
+    ctx.strokeRect(i * minsPerUnit, 24, 1, 8);
     ctx.fillText(
       `${formatNumber(tmp.getHours())}:${formatNumber(tmp.getMinutes())}`,
       i * minsPerUnit - chartViewModel.halfTextWidth,
-      32
+      42
     );
   }
   ctx.restore();
@@ -227,6 +229,16 @@ const drawInteraction = (ctx, interaction, dragStart, dragEnd) => {
   }
 };
 
+const drawNowLine = (ctx, chartViewModel) => {
+  ctx.save();
+  const x = timeToPositionX(new Date(), chartViewModel);
+  if (x) {
+    ctx.strokeStyle = "red";
+    ctx.translate(chartViewModel.transformX, 0);
+    ctx.strokeRect(x, 0, 1, chartViewModel.height);
+  }
+  ctx.restore();
+};
 /**
  * this stuff must be triggerd on new entries and on resize
  */
@@ -250,6 +262,7 @@ const loop = () => {
     drawChart(context, canvas, chartViewModel, settings);
     drawBottom(context, canvas, chartViewModel, settings);
     drawInteraction(interactionContext, interaction, dragStart, dragEnd);
+    drawNowLine(context, chartViewModel);
     loop();
   });
 };
