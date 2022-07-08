@@ -31,3 +31,5 @@ export const getStepsUnit = (pxPerMinute, settings) => {
 export const getPxScale = (chartViewModel) => {
   return Math.floor(chartViewModel.pxPerMinute * chartViewModel.scale);
 };
+
+export const formatNumber = (num) => `${num > 9 ? "" : "0"}${num}`;

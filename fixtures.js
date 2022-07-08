@@ -14,10 +14,10 @@ export const settings = {
     padding: 32,
     itemHeight: 64,
     showMinutesWhenPxPerMinuteLessThen: Infinity,
-    showFifteenMinutesWhenPxPerMinuteLessThen: 16,
-    showThirtyMinutesWhenPxPerMinuteLessThen: 8,
-    showSixtyMinutesWhenPxPerMinuteLessThen: 2,
-    showHundredTwentyMinutesWhenPxPerMinuteLessThen: 1,
+    showFifteenMinutesWhenPxPerMinuteLessThen: 100,
+    showThirtyMinutesWhenPxPerMinuteLessThen: 50,
+    showSixtyMinutesWhenPxPerMinuteLessThen: 25,
+    showHundredTwentyMinutesWhenPxPerMinuteLessThen: 10,
   },
 };
 
