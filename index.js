@@ -1,6 +1,11 @@
 import { fixtures, settings } from "./fixtures.js";
 import { optimizeSwimlane, toChartModel } from "./services.js";
-import { formatNumber, getPxScale, getStepsUnit } from "./utils.js";
+import {
+  formatNumber,
+  getPxScale,
+  getStepsUnit,
+  positionXToTime,
+} from "./utils.js";
 
 const canvas = document.querySelector("#board");
 const context = canvas.getContext("2d");
@@ -28,15 +33,25 @@ interaction.addEventListener("mousedown", ($event) => {
   dragStart = { x: $event.layerX, y: $event.layerY };
 });
 interaction.addEventListener("mouseup", ($event) => {
+  if (!!dragStart && !!dragEnd) {
+    const start = positionXToTime(dragStart.x, chartViewModel);
+    const end = positionXToTime(dragEnd.x, chartViewModel);
+
+    if (start.getTime() < end.getTime()) {
+      chartViewModel.startingTime = start;
+      chartViewModel.endingTime = end;
+    } else {
+      chartViewModel.startingTime = end;
+      chartViewModel.endingTime = start;
+    }
+  }
   dragStart = undefined;
   dragEnd = undefined;
 });
 interaction.addEventListener("mousemove", ($event) => {
   dragEnd = { x: $event.layerX, y: $event.layerY };
   if (chartViewModel.startingTime && chartViewModel.endingTime) {
-    currentMouseTime = new Date(chartViewModel.startingTime);
-    const minutes = $event.layerX / chartViewModel.pxPerMinute;
-    currentMouseTime.setMinutes(currentMouseTime.getMinutes() + minutes);
+    currentMouseTime = positionXToTime($event.layerX, chartViewModel, settings);
   }
 });
 interaction.addEventListener("mouseleave", ($event) => {
@@ -217,12 +232,8 @@ const drawInteraction = (ctx, interaction, dragStart, dragEnd) => {
  */
 recalcCanvas(container, canvas);
 updateModel();
-chartViewModel.startingTime = new Date(
-  new Date().setHours(new Date().getHours() - 12, 0, 0, 0)
-);
-chartViewModel.endingTime = new Date(
-  new Date().setHours(new Date().getHours() + 12, 0, 0, 0)
-);
+chartViewModel.startingTime = new Date(new Date().setHours(-12, 0, 0, 0));
+chartViewModel.endingTime = new Date(new Date().setHours(12, 0, 0, 0));
 updateLegendViewModel(canvas, chartModel);
 updateChartViewModel(canvas, legendViewModel, chartModel);
 recalcInteractionZone(chartViewModel, interaction);
