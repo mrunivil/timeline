@@ -37,9 +37,7 @@ export const formatNumber = (num) => `${num > 9 ? "" : "0"}${num}`;
 export const positionXToTime = (x, chartViewModel, settings) => {
   const currentMouseTime = new Date(chartViewModel.startingTime);
   const minutes = x / chartViewModel.pxPerMinute;
-  currentMouseTime.setMinutes(
-    Math.ceil((currentMouseTime.getMinutes() + minutes) / 5) * 5
-  );
+  currentMouseTime.setMinutes(currentMouseTime.getMinutes() + minutes);
   return currentMouseTime;
 };
 
