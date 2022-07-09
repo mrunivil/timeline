@@ -23,42 +23,42 @@ export const settings = {
 
 export const fixtures = [
   {
-    startingDate: new Date(
+    startingTime: new Date(
       new Date().setHours(new Date().getHours() - 1, 0, 0, 0)
     ),
-    endingDate: new Date(new Date().setHours(new Date().getHours(), 0, 0, 0)),
+    endingTime: new Date(new Date().setHours(new Date().getHours(), 0, 0, 0)),
     title: "some title",
     swimlane: "group 1",
   },
   {
-    startingDate: new Date(),
-    endingDate: new Date(
+    startingTime: new Date(),
+    endingTime: new Date(
       new Date().setHours(new Date().getHours() + 1, 0, 0, 0)
     ),
     title: "some title 2",
     swimlane: "group 1",
   },
   {
-    startingDate: new Date(),
-    endingDate: new Date(
+    startingTime: new Date(),
+    endingTime: new Date(
       new Date().setHours(new Date().getHours() + 1, 0, 0, 0)
     ),
     title: "some title 2",
     swimlane: "group 1",
   },
   {
-    startingDate: new Date(),
-    endingDate: new Date(
+    startingTime: new Date(),
+    endingTime: new Date(
       new Date().setHours(new Date().getHours() + 1, 0, 0, 0)
     ),
     title: "some title 3",
     swimlane: "group 2",
   },
   {
-    startingDate: new Date(
+    startingTime: new Date(
       new Date().setHours(new Date().getHours() - 1, 0, 0, 0)
     ),
-    endingDate: new Date(
+    endingTime: new Date(
       new Date().setHours(new Date().getHours() + 1, 0, 0, 0)
     ),
     title: "some title 4",

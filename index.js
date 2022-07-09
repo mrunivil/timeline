@@ -155,13 +155,6 @@ const updateChartViewModel = (canvas, legendViewModel, chartModel) => {
 const drawLegend = (ctx, canvas, legendViewModel, settings) => {
   if (legendViewModel.show) {
     ctx.lineWidth = 0.25;
-    // ctx.strokeRect(0, 0, legendViewModel.width, legendViewModel.height, 1);
-    ctx.strokeRect(
-      settings.legend.padding,
-      settings.legend.padding,
-      legendViewModel.width - settings.legend.padding * 2,
-      legendViewModel.height - settings.legend.padding * 2
-    );
   }
 };
 
@@ -201,17 +194,17 @@ const drawGroup = (ctx, chartViewModel, settings) => {
     ctx.moveTo(0, series.y + series.height);
     ctx.lineTo(canvas.width, series.y + series.height);
     ctx.stroke();
-    const width = ctx.measureText(series.label).width;
     ctx.fillText(
       series.label,
-      legendViewModel.width - settings.legend.padding * 2 - width,
+      settings.legend.padding,
       series.y + series.height / 2
     );
+    drawEntries(ctx, chartViewModel, settings);
   });
   ctx.restore();
 };
 
-const drawEntry = (ctx, chartViewModel, settings) => {};
+const drawEntries = (ctx, chartViewModel, settings) => {};
 
 const drawBottom = (ctx, canvas, chartViewModel, settings) => {
   ctx.save();

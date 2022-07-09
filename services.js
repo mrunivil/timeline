@@ -1,4 +1,4 @@
-import { groupBySwimlane, positionXToTime } from "./utils.js";
+import { groupBySwimlane, positionXToTime, timeToPositionX } from "./utils.js";
 
 export const toChartModel = (model) => {
   return groupBySwimlane(model);
@@ -12,8 +12,8 @@ export const optimizeSwimlane = (swimlane, model) => {
     for (let x = 0; x < ret.length; x++) {
       const apps = ret[x];
       if (
-        apps[apps.length - 1].endingDate.getTime() <
-        appointment.startingDate.getTime()
+        apps[apps.length - 1].endingTime.getTime() <
+        appointment.startingTime.getTime()
       ) {
         earliestRowIndex = x;
         break;
@@ -37,9 +37,26 @@ export const parseToChartViewSeries = (data, chartViewModel, settings) => {
         (data[lane].length / 2) * settings.board.gap +
         settings.board.gap,
       label: lane,
+      entries: data[lane].map((e) =>
+        parseChartViewEntries(e, chartViewModel, settings)
+      ),
     };
     yStart = ret.y + ret.height;
     return ret;
+  });
+};
+
+// calc start point and width of entry
+export const parseChartViewEntries = (row, chartViewModel, settings) => {
+  return row.map((e) => {
+    return {
+      x: timeToPositionX(e.startingTime, chartViewModel, settings),
+      y: 0,
+      width:
+        timeToPositionX(e.endingTime, chartViewModel, settings) -
+        timeToPositionX(e.startingTime, chartViewModel, settings),
+      height: settings.chart.itemHeight,
+    };
   });
 };
 
