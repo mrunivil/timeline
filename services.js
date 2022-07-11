@@ -38,7 +38,12 @@ export const parseToChartViewSeries = (data, chartViewModel, settings) => {
         settings.board.gap,
       label: lane,
       entries: data[lane].map((e) =>
-        parseChartViewEntries(e, chartViewModel, settings)
+        parseChartViewEntries(
+          e,
+          chartViewModel,
+          settings,
+          yStart + settings.board.gap
+        )
       ),
     };
     yStart = ret.y + ret.height;
@@ -47,11 +52,17 @@ export const parseToChartViewSeries = (data, chartViewModel, settings) => {
 };
 
 // calc start point and width of entry
-export const parseChartViewEntries = (row, chartViewModel, settings) => {
-  return row.map((e) => {
+export const parseChartViewEntries = (
+  row,
+  chartViewModel,
+  settings,
+  yStart
+) => {
+  return row.map((e, index) => {
     return {
       x: timeToPositionX(e.startingTime, chartViewModel, settings),
-      y: 0,
+      y:
+        yStart + settings.board.gap * index + settings.chart.itemHeight * index,
       width:
         timeToPositionX(e.endingTime, chartViewModel, settings) -
         timeToPositionX(e.startingTime, chartViewModel, settings),

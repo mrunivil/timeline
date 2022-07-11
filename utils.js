@@ -26,11 +26,11 @@ export const timeToPositionX = (date, chartViewModel) => {
   const dateTime = date.getTime();
   const startTime = chartViewModel.startingTime.getTime();
   const endTime = chartViewModel.endingTime.getTime();
-  if (dateTime >= startTime && endTime >= startTime) {
-    const minsFromStart = (dateTime - startTime) / 60000;
-    return Math.floor(minsFromStart * chartViewModel.pxPerMinute);
-  }
-  return undefined;
+  // if (dateTime >= startTime && endTime >= startTime) {
+  const minsFromStart = (dateTime - startTime) / 60000;
+  return Math.floor(minsFromStart * chartViewModel.pxPerMinute);
+  // }
+  // return undefined;
 };
 
 export const getTimeSpanInMinutes = (factor) => {

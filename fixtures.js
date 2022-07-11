@@ -2,6 +2,7 @@ export const settings = {
   board: {
     lines: true,
     gap: 8,
+    padding: 32,
   },
   legend: {
     padding: 32,
@@ -12,7 +13,7 @@ export const settings = {
   },
   chart: {
     padding: 32,
-    itemHeight: 64,
+    itemHeight: 32,
     showMinutesWhenPxPerMinuteLessThen: Infinity,
     showFifteenMinutesWhenPxPerMinuteLessThen: 100,
     showThirtyMinutesWhenPxPerMinuteLessThen: 50,
