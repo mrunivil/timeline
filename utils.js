@@ -13,25 +13,6 @@ export const calcPxPerMinute = (startingTime, endingTime, width) => {
   return width / minuteRange;
 };
 
-export const getStepsUnit = (pxPerMinute, settings) => {
-  if (
-    pxPerMinute < settings.chart.showHundredTwentyMinutesWhenPxPerMinuteLessThen
-  )
-    return 120;
-  if (pxPerMinute < settings.chart.showSixtyMinutesWhenPxPerMinuteLessThen)
-    return 60;
-  if (pxPerMinute < settings.chart.showThirtyMinutesWhenPxPerMinuteLessThen)
-    return 30;
-  if (pxPerMinute < settings.chart.showFifteenMinutesWhenPxPerMinuteLessThen)
-    return 15;
-  if (pxPerMinute < settings.chart.showMinutesWhenPxPerMinuteLessThen) return 1;
-  return 60;
-};
-
-export const getPxScale = (chartViewModel) => {
-  return Math.floor(chartViewModel.pxPerMinute * chartViewModel.scale);
-};
-
 export const formatNumber = (num) => `${num > 9 ? "" : "0"}${num}`;
 
 export const positionXToTime = (x, chartViewModel, settings) => {
@@ -45,9 +26,34 @@ export const timeToPositionX = (date, chartViewModel) => {
   const dateTime = date.getTime();
   const startTime = chartViewModel.startingTime.getTime();
   const endTime = chartViewModel.endingTime.getTime();
-  if (dateTime > startTime && endTime > startTime) {
+  if (dateTime >= startTime && endTime >= startTime) {
     const minsFromStart = (dateTime - startTime) / 60000;
     return Math.floor(minsFromStart * chartViewModel.pxPerMinute);
   }
   return undefined;
+};
+
+export const getTimeSpanInMinutes = (factor) => {
+  switch (factor) {
+    case 120:
+      return 24 * 60;
+    case 60:
+      return 12 * 60;
+    case 30:
+      return 6 * 60;
+    case 15:
+      return 3 * 60;
+    case 5:
+      return 1 * 60;
+    case 1:
+      return 0.2 * 60;
+    default:
+      24 * 60;
+  }
+};
+
+export const getClosestTimeSlot = (factor, time) => {
+  return new Date(
+    time.setMinutes(Math.floor(time.getMinutes() / factor) * factor)
+  );
 };

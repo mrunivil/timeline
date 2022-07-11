@@ -3,12 +3,11 @@ import {
   optimizeSwimlane,
   parseToChartViewSeries,
   toChartModel,
-  zoomIn,
 } from "./services.js";
 import {
   formatNumber,
-  getPxScale,
-  getStepsUnit,
+  getClosestTimeSlot,
+  getTimeSpanInMinutes,
   positionXToTime,
   timeToPositionX,
 } from "./utils.js";
@@ -18,16 +17,26 @@ const context = canvas.getContext("2d");
 const interaction = document.querySelector("#interaction");
 const interactionContext = interaction.getContext("2d");
 const container = document.querySelector(".container");
-const btnReset = document
-  .querySelector("#btnZoom")
-  .addEventListener("click", () => {
-    resetTime();
-  });
+const lblScale = document.querySelector("#scale");
+
+document.querySelector("#btnReset").addEventListener("click", () => {
+  resetTime();
+});
+
+document.querySelector("#btnZoomIn").addEventListener("click", () => {
+  zoomIn(chartViewModel);
+});
+
+document.querySelector("#btnZoomOut").addEventListener("click", () => {
+  zoomOut(chartViewModel);
+});
 
 let zoomed,
   chartModel = {},
   legendViewModel = {},
-  chartViewModel = {},
+  chartViewModel = {
+    scale: 120,
+  },
   dragStart,
   dragEnd,
   currentMouseTime;
@@ -42,26 +51,26 @@ window.addEventListener("resize", () => {
 });
 
 interaction.addEventListener("mousedown", ($event) => {
-  dragStart = { x: $event.layerX, y: $event.layerY };
+  // dragStart = { x: $event.layerX, y: $event.layerY };
 });
 interaction.addEventListener("mouseup", ($event) => {
-  if (!!dragStart && !!dragEnd) {
-    zoomIn(dragStart.x, dragEnd.x, chartViewModel);
-    updateChartViewModel(canvas, legendViewModel, chartViewModel);
-    zoomed = true;
-  }
-  dragStart = undefined;
-  dragEnd = undefined;
+  // if (!!dragStart && !!dragEnd) {
+  //   zoomIn(dragStart.x, dragEnd.x, chartViewModel);
+  //   updateChartViewModel(canvas, legendViewModel, chartViewModel);
+  //   zoomed = true;
+  // }
+  // dragStart = undefined;
+  // dragEnd = undefined;
 });
 interaction.addEventListener("mousemove", ($event) => {
-  dragEnd = { x: $event.layerX, y: $event.layerY };
+  // dragEnd = { x: $event.layerX, y: $event.layerY };
   if (chartViewModel.startingTime && chartViewModel.endingTime) {
     currentMouseTime = positionXToTime($event.layerX, chartViewModel, settings);
   }
 });
 interaction.addEventListener("mouseleave", ($event) => {
-  dragStart = undefined;
-  dragEnd = undefined;
+  // dragStart = undefined;
+  // dragEnd = undefined;
 });
 
 const recalcCanvas = (container, canvas) => {
@@ -129,9 +138,6 @@ const updateLegendViewModel = (canvas, chartModel) => {
 };
 
 const updateChartViewModel = (canvas, legendViewModel, chartModel) => {
-  if (!zoomed) {
-    resetTime();
-  }
   chartViewModel.width = Math.floor(canvas.clientWidth - legendViewModel.width);
   chartViewModel.contentWidth =
     chartViewModel.width - settings.chart.padding * 2;
@@ -143,8 +149,6 @@ const updateChartViewModel = (canvas, legendViewModel, chartModel) => {
     60000;
   chartViewModel.pxPerMinute =
     chartViewModel.contentWidth / chartViewModel.duration;
-  chartViewModel.scale = getStepsUnit(chartViewModel.pxPerMinute, settings);
-  chartViewModel.pxScale = getPxScale(chartViewModel);
   chartViewModel.series = parseToChartViewSeries(
     chartModel,
     chartViewModel,
@@ -153,9 +157,23 @@ const updateChartViewModel = (canvas, legendViewModel, chartModel) => {
 };
 
 const drawLegend = (ctx, canvas, legendViewModel, settings) => {
-  if (legendViewModel.show) {
-    ctx.lineWidth = 0.25;
-  }
+  ctx.save();
+  ctx.lineWidth = 0.25;
+  ctx.translate(settings.legend.padding, settings.legend.padding);
+  chartViewModel.series?.forEach((series) => {
+    ctx.beginPath();
+    ctx.moveTo(0, series.y + series.height);
+    ctx.lineTo(canvas.width, series.y + series.height);
+    ctx.stroke();
+    if (legendViewModel.show) {
+      ctx.fillText(
+        series.label,
+        settings.legend.padding,
+        series.y + series.height / 2
+      );
+    }
+  });
+  ctx.restore();
 };
 
 const drawChart = (ctx, canvas, chartViewModel, settings) => {
@@ -190,15 +208,6 @@ const drawGroup = (ctx, chartViewModel, settings) => {
   ctx.lineWidth = 0.25;
   ctx.translate(settings.legend.padding, settings.legend.padding);
   chartViewModel.series?.forEach((series) => {
-    ctx.beginPath();
-    ctx.moveTo(0, series.y + series.height);
-    ctx.lineTo(canvas.width, series.y + series.height);
-    ctx.stroke();
-    ctx.fillText(
-      series.label,
-      settings.legend.padding,
-      series.y + series.height / 2
-    );
     drawEntries(ctx, chartViewModel, settings);
   });
   ctx.restore();
@@ -207,44 +216,31 @@ const drawGroup = (ctx, chartViewModel, settings) => {
 const drawEntries = (ctx, chartViewModel, settings) => {};
 
 const drawBottom = (ctx, canvas, chartViewModel, settings) => {
+  const minsPerUnit = chartViewModel.factor * chartViewModel.pxPerMinute;
+  const countLines = Math.floor(chartViewModel.width / minsPerUnit) + 1;
+
   ctx.save();
   ctx.translate(
     chartViewModel.transformX,
-    chartViewModel.height - settings.legend.bottom
+    chartViewModel.height + settings.board.gap * 2 - settings.legend.bottom
   );
-  ctx.strokeStyle = "#333333";
-
-  let factor = 120;
-
-  if (chartViewModel.pxPerMinute > 30) {
-    factor = 1;
-  } else if (chartViewModel.pxPerMinute > 6) {
-    factor = 5;
-  } else if (chartViewModel.pxPerMinute > 2) {
-    factor = 15;
-  } else if (chartViewModel.pxPerMinute > 1) {
-    factor = 30;
-  } else if (chartViewModel.pxPerMinute > 0.65) {
-    factor = 60;
-  } else if (chartViewModel.pxPerMinute > 0.35) {
-    factor = 120;
-  } else {
-    factor = 240;
-  }
-  const minsPerUnit = factor * chartViewModel.pxPerMinute;
-
-  const countLines = Math.floor(chartViewModel.width / minsPerUnit) + 1;
-  ctx.lineWidth = 0.25;
+  ctx.lineWidth = 1;
+  ctx.strokeStyle = "#33333333";
   ctx.fillStyle = "#333333";
   for (let i = 0; i < countLines; i++) {
-    const tmp = new Date(chartViewModel.startingTime);
-    tmp.setMinutes(tmp.getMinutes() + i * factor);
-    ctx.strokeRect(i * minsPerUnit, 24, 1, 8);
+    let tmp = new Date(chartViewModel.startingTime);
+    tmp.setMinutes(tmp.getMinutes() + i * chartViewModel.factor);
+    tmp = getClosestTimeSlot(chartViewModel.factor, tmp);
+
+    const pos = timeToPositionX(tmp, chartViewModel);
+
+    ctx.strokeRect(pos, 0, 1, 12);
     ctx.fillText(
       `${formatNumber(tmp.getHours())}:${formatNumber(tmp.getMinutes())}`,
-      i * minsPerUnit - chartViewModel.halfTextWidth,
-      42
+      pos - chartViewModel.halfTextWidth,
+      24
     );
+    ctx.strokeRect(pos, 0, 1, +settings.legend.bottom - chartViewModel.height);
   }
   ctx.restore();
 };
@@ -280,13 +276,69 @@ const drawNowLine = (ctx, chartViewModel) => {
   ctx.restore();
 };
 
+const updateControls = (chartViewModel) => {
+  lblScale.innerHTML = `${chartViewModel.scale}`;
+};
+
 const resetTime = () => {
+  chartViewModel.factor = 120;
+  recalcTimeSlot(chartViewModel);
+  updateControls(chartViewModel);
+};
+
+const zoomIn = (chartViewModel) => {
+  switch (chartViewModel.factor) {
+    case 120:
+      chartViewModel.factor = 60;
+      break;
+    case 60:
+      chartViewModel.factor = 30;
+      break;
+    case 30:
+      chartViewModel.factor = 15;
+      break;
+    case 15:
+      chartViewModel.factor = 5;
+      break;
+    case 5:
+      chartViewModel.factor = 1;
+      break;
+  }
+  recalcTimeSlot(chartViewModel);
+  updateControls(chartViewModel);
+};
+const zoomOut = (chartViewModel) => {
+  switch (chartViewModel.factor) {
+    case 1:
+      chartViewModel.factor = 5;
+      break;
+    case 5:
+      chartViewModel.factor = 15;
+      break;
+    case 15:
+      chartViewModel.factor = 30;
+      break;
+    case 30:
+      chartViewModel.factor = 60;
+      break;
+    case 60:
+      chartViewModel.factor = 120;
+      break;
+  }
+  recalcTimeSlot(chartViewModel);
+  updateControls(chartViewModel);
+};
+
+const recalcTimeSlot = (chartViewModel) => {
+  const oneMinute = 600000;
   const now = Date.now();
-  const start = now - 1000 * 60 * 60 * 12;
-  const end = now + 1000 * 60 * 60 * 12;
-  chartViewModel.startingTime = new Date(start);
-  chartViewModel.endingTime = new Date(end);
-  zoomed = false;
+  const min = new Date(now);
+  const timeSpan = getTimeSpanInMinutes(chartViewModel.factor);
+  min.setMinutes(min.getMinutes() - Math.round(timeSpan / 6));
+  const max = new Date(now);
+  max.setMinutes(max.getMinutes() + Math.round((timeSpan * 5) / 6));
+  chartViewModel.startingTime = new Date(min);
+  chartViewModel.endingTime = new Date(max);
 };
 
 /**
@@ -308,6 +360,7 @@ console.dir(chartModel);
 const loop = () => {
   window.requestAnimationFrame(() => {
     context.clearRect(0, 0, canvas.width, canvas.height);
+    recalcTimeSlot(chartViewModel);
     updateChartViewModel(canvas, legendViewModel, chartModel);
     drawLegend(context, canvas, legendViewModel, settings);
     drawChart(context, canvas, chartViewModel, settings);
