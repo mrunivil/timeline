@@ -118,23 +118,23 @@ const updateLegendViewModel = (canvas, chartModel) => {
         Math.min(200, 300)
       )
     );
-    legendViewModel.entries = Object.keys(chartModel).map((swimlane) => {
-      return {
-        label: swimlane,
-        height: Math.floor(
-          2 * settings.board.gap +
-            settings.board.gap * chartModel[swimlane].length +
-            settings.chart.itemHeight * chartModel[swimlane].length
-        ),
-      };
-    });
-    legendViewModel.height = Math.floor(
-      settings.legend.bottom +
-        legendViewModel.entries.reduce((prev, curr) => {
-          return prev + curr.height;
-        }, 0)
-    );
   }
+  legendViewModel.entries = Object.keys(chartModel).map((swimlane) => {
+    return {
+      label: swimlane,
+      height: Math.floor(
+        2 * settings.board.gap +
+          settings.board.gap * chartModel[swimlane].length +
+          settings.chart.itemHeight * chartModel[swimlane].length
+      ),
+    };
+  });
+  legendViewModel.height = Math.floor(
+    settings.legend.bottom +
+      legendViewModel.entries.reduce((prev, curr) => {
+        return prev + curr.height;
+      }, 0)
+  );
 };
 
 const updateChartViewModel = (canvas, legendViewModel, chartModel) => {
@@ -158,9 +158,25 @@ const updateChartViewModel = (canvas, legendViewModel, chartModel) => {
 
 const drawLegend = (ctx, canvas, legendViewModel, settings) => {
   ctx.save();
-  ctx.lineWidth = 0.25;
+  ctx.lineWidth = 1;
+  ctx.strokeStyle = "#333333A0";
+  ctx.fillStyle = "#333333CC";
+  ctx.font = "1rem Noto Sans";
   ctx.translate(settings.legend.padding, settings.legend.padding);
-  chartViewModel.series?.forEach((series) => {
+  ctx.beginPath();
+  ctx.moveTo(legendViewModel.width, 0);
+  ctx.lineTo(
+    legendViewModel.width,
+    legendViewModel.height - settings.legend.padding * 2
+  );
+  ctx.stroke();
+  chartViewModel.series?.forEach((series, index) => {
+    if (index === 0) {
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(canvas.width, 0);
+      ctx.stroke();
+    }
     ctx.beginPath();
     ctx.moveTo(0, series.y + series.height);
     ctx.lineTo(canvas.width, series.y + series.height);
@@ -205,7 +221,7 @@ const drawGroup = (ctx, chartViewModel, settings) => {
     debugged = true;
   }
   ctx.save();
-  ctx.lineWidth = 0.25;
+  ctx.lineWidth = 1;
   ctx.translate(settings.legend.padding, settings.legend.padding);
   chartViewModel.series?.forEach((series) => {
     drawEntries(ctx, chartViewModel, settings);
@@ -225,7 +241,7 @@ const drawBottom = (ctx, canvas, chartViewModel, settings) => {
     chartViewModel.height + settings.board.gap * 2 - settings.legend.bottom
   );
   ctx.lineWidth = 1;
-  ctx.strokeStyle = "#33333333";
+  ctx.strokeStyle = "#33333320";
   ctx.fillStyle = "#333333";
   for (let i = 0; i < countLines; i++) {
     let tmp = new Date(chartViewModel.startingTime);
@@ -240,7 +256,12 @@ const drawBottom = (ctx, canvas, chartViewModel, settings) => {
       pos - chartViewModel.halfTextWidth,
       24
     );
-    ctx.strokeRect(pos, 0, 1, +settings.legend.bottom - chartViewModel.height);
+    ctx.strokeRect(
+      pos,
+      0,
+      1,
+      +settings.legend.bottom - chartViewModel.height + settings.board.gap * 2
+    );
   }
   ctx.restore();
 };
@@ -277,7 +298,7 @@ const drawNowLine = (ctx, chartViewModel) => {
 };
 
 const updateControls = (chartViewModel) => {
-  lblScale.innerHTML = `${chartViewModel.scale}`;
+  lblScale.textContent = `${chartViewModel.factor}`;
 };
 
 const resetTime = () => {
